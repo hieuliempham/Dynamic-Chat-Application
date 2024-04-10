@@ -18,5 +18,5 @@ const chatSchema = new mongoose.Schema({
     },
     {timestamps: true}
 );
-
+///thanhloi
 module.exports = mongoose.model('Chat', chatSchema)

@@ -1,32 +1,55 @@
+import { useContext } from "react";
 import { Alert, Button, Form, Row, Col, Stack } from "react-bootstrap";
+import { AuthContext } from "../context/authContext";
 
 //prettier
 const Login = () => {
-    return ( 
+  const { updateLoginInfo, loginUser, loginError, loginInfo, isLoginLoading } =
+    useContext(AuthContext);
+
+  return (
     <>
-    <Form>
-        <Row 
-         style={{
+      <Form onSubmit={loginUser}>
+        <Row
+          style={{
             height: "100vh",
             justifyContent: "center",
-            paddingTop: "10%"
-         }}
+            paddingTop: "10%",
+          }}
         >
-            <Col xs={6}>
+          <Col xs={6}>
             <Stack gap={3}>
-                <h2>Đăng nhập</h2>
+              <h2>Đăng nhập</h2>
 
-                <Form.Control type="email;" placeholder="Email"/>
-                <Form.Control type="password" placeholder="Mật khẩu"/>
-                <Button varriant="primary" type="submit">
-                    Đăng nhập
-                </Button>
-                <Alert variant="danger">Xảy ra Lỗi :((</Alert>
+              <Form.Control
+                type="email"
+                placeholder="Email"
+                onChange={(e) =>
+                  updateLoginInfo({ ...loginInfo, email: e.target.value })
+                }
+              />
+              <Form.Control
+                type="password"
+                placeholder="Mật khẩu"
+                onChange={(e) =>
+                  updateLoginInfo({ ...loginInfo, password: e.target.value })
+                }
+              />
+              <Button varriant="primary" type="submit">
+                {isLoginLoading? "Đang đăng nhập" : "Đăng nhập"}
+              </Button>
+
+              {loginError?.error && (
+                <Alert variant="danger">
+                  <p>{loginError?.message}</p>  
+                </Alert>
+              )}
             </Stack>
-            </Col>
+          </Col>
         </Row>
-    </Form>
-    </> );
-}
- 
+      </Form>
+    </>
+  );
+};
+
 export default Login;

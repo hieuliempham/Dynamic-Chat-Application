@@ -1,4 +1,3 @@
-const { Timestamp } = require('mongodb');
 const mongoose = require('mongoose')
 
 const chatSchema = new mongoose.Schema(
@@ -6,7 +5,7 @@ const chatSchema = new mongoose.Schema(
         members: Array,
     },
     {
-        Timestamp: true,
+        timestamps: true,
     }
 );
 module.exports = mongoose.model('Chat', chatSchema)

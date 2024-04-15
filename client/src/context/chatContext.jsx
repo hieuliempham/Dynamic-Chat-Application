@@ -17,8 +17,10 @@ export const ChatContextProvider = ({ children, user }) => {
   const [newMessage, setNewMessage] = useState(null);
   const [socket, setSocket] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
 
-  console.log("onlineUsers", onlineUsers);
+  console.log("noti", notifications);
   // console.log("currentChat", currentChat);
 
   // init socket
@@ -50,26 +52,34 @@ export const ChatContextProvider = ({ children, user }) => {
 
     const recipientId = currentChat?.members.find((id) => id !== user?._id);
 
-    socket.emit("sendMessage", {...newMessage, recipientId})
-
+    socket.emit("sendMessage", { ...newMessage, recipientId });
   }, [newMessage]);
 
-  // nhan tin nhan
+  // nhan tin nhan va thong bao
   useEffect(() => {
     if (socket === null) return;
 
-    socket.on("getMessage", res => {
-      if(currentChat?._id !== res.chatId) return
+    socket.on("getMessage", (res) => {
+      if (currentChat?._id !== res.chatId) return;
 
       setMessages((prev) => [...prev, res]);
-    })
+    });
 
-    return ()=>{
-      socket.off("getMessage")
-    }
+    socket.on("getNotification", (res) => {
+      const isChatOpen = currentChat?.members.some((id) => id === res.senderId);
 
+      if (isChatOpen) {
+        setNotifications((prev) => [{ ...res, isRead: true }, ...prev]);
+      } else {
+        setNotifications((prev) => [res, ...prev]);
+      }
+    });
+
+    return () => {
+      socket.off("getMessage");
+      socket.off("getNotification");
+    };
   }, [socket, currentChat]);
-
 
   useEffect(() => {
     const getUsers = async () => {
@@ -96,6 +106,7 @@ export const ChatContextProvider = ({ children, user }) => {
 
       //console.log(pChats);
       setPotentialChats(pChats);
+      setAllUsers(response);
     };
 
     getUsers();
@@ -186,6 +197,42 @@ export const ChatContextProvider = ({ children, user }) => {
     setUserChats((prev) => [...prev, response]);
   }, []);
 
+  const markAllNotificationsAsRead = useCallback((notifications) => {
+    const mNotications = notifications.map((n) => {
+      return { ...n, isRead: true };
+    });
+
+    setNotifications(mNotications);
+  }, []);
+
+  const markNotificationAsRead = useCallback(
+    (n, userChats, user, notifications) => {
+      // find chat open
+
+      const desiredChat = userChats.find((chat) => {
+        const chatMembers = [user._id, n.senderId];
+        const isDesiredChat = chat?.members.every((member) => {
+          return chatMembers.includes(member);
+        });
+
+        return isDesiredChat;
+      });
+
+      // danh dau da doc thong bao
+      const mNotications = notifications.map((el) => {
+        if (n.senderId === el.senderId) {
+          return { ...n, isRead: true };
+        } else {
+          return el;
+        }
+      });
+
+      updateCurrentChat(desiredChat);
+      setNotifications(mNotications);
+    },
+    []
+  );
+
   return (
     <ChatContext.Provider
       value={{
@@ -201,6 +248,10 @@ export const ChatContextProvider = ({ children, user }) => {
         messagesError,
         sendTextMessage,
         onlineUsers,
+        notifications,
+        allUsers,
+        markAllNotificationsAsRead,
+        markNotificationAsRead,
       }}
     >
       {children}

@@ -99,23 +99,26 @@ const getUsers = async (req, res) => {
 
 const forgotpassword = async function (req, res) {
   const { email } = req.body;
+
+  if (!validator.isEmail(email))
+    return res.status(400).json("Email sai định dạng!");
+
+  let user = await userModel.findOne({ email });
+
+  if (!user) {
+    return res.status(400).json("Tài khoản không tồn tại!");
+  }
+  let token = user.genRestPasswordToken();
+  await user.save();
+
+  let url = `http://example.com/resetpassword/${token}`; // Thay đổi đường dẫn reset password tại đây
   try {
-    if (!validator.isEmail(email))
-      return res.status(400).json("Email sai định dạng!");
-
-    let user = await userModel.findOne({ email });
-    console.log({ user });
-    if (!user) {
-      return res.status(400).json("Email hoặc mật khẩu sai!");
-    }
-    let token = user.genRestPasswordToken();
-    await user.save();
-
-    let url = `http://example.com/resetpassword/${token}`; // Thay đổi đường dẫn reset password tại đây
-
     await sendMail(user.email, url); // Gửi email với đường dẫn reset mật khẩu
     res.status(200).json("Gửi email thành công");
   } catch (error) {
+    // user.ResetPasswordTokenExp = undefined;
+    // user.ResetPasswordToken = undefined;
+    // await user.save();
     res.status(500).json(error);
   }
 };

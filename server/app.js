@@ -4,6 +4,7 @@ const mongoose = require("mongoose")
 const userRoute = require("./routes/userRoute");
 const chatRoute = require("./routes/chatRoute");
 const messageRoute = require("./routes/messageRoute");
+const groupRoutes = require("./routes/groupRoute")
 const cookieParser = require('cookie-parser');
 
 
@@ -17,6 +18,7 @@ app.use(cookieParser());
 app.use("/api/users", userRoute);
 app.use("/api/chats", chatRoute);
 app.use("/api/messages", messageRoute);
+app.use("/api/groups", groupRoutes);
 
 
 app.get("/", (req, res) =>{

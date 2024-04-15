@@ -56,7 +56,7 @@ const Notification = () => {
                       n.isRead ? "notification" : "notification not-read"
                     }
                     onClick={()=>{
-                        markNotificationAsRead(n, userchats, user, notifications);
+                        markNotificationAsRead(n, userChats, user, notifications);
                     }}
                   >
                     <span>{`${n.senderName} gửi bạn một tin nhắn mới`}</span>
